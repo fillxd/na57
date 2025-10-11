@@ -1276,20 +1276,27 @@
             }
         }
 
-        // Calendar functions
-        function getCurrentWeek() {
-            const today = new Date();
-            const start = new Date(today);
-            const day = start.getDay();
-            const diff = start.getDate() - day + (day === 0 ? -6 : 1);
-            start.setDate(diff);
-            
-            const end = new Date(start);
-            end.setDate(start.getDate() + 4);
-            
-            return { start, end };
-        }
-
+function getCurrentWeek() {
+    const today = new Date();
+    const start = new Date(today);
+    
+    // Ustawiamy godzinę na 12:00:00 aby uniknąć problemów ze strefami czasowymi
+    start.setHours(12, 0, 0, 0);
+    
+    // Obliczamy poniedziałek: 
+    // - getDay() zwraca 0 dla niedzieli, 1 dla poniedziałku, ..., 6 dla soboty
+    // - Aby dostać poniedziałek: odejmujemy (dzień tygodnia - 1), 
+    //   ale jeśli to niedziela (0), to odejmujemy -6 żeby dostać poprzedni poniedziałek
+    const day = start.getDay();
+    const diff = start.getDate() - day + (day === 0 ? -6 : 1);
+    
+    start.setDate(diff);
+    
+    const end = new Date(start);
+    end.setDate(start.getDate() + 4);
+    
+    return { start, end };
+}
         function generateWeeklyCalendar() {
             const calendarBody = document.getElementById('calendar-body');
             const weekRangeElement = document.getElementById('week-range');
@@ -2840,15 +2847,18 @@
             }
         }
 
-        // Utility functions
-        function formatDate(date) {
-            return date.toISOString().split('T')[0];
-        }
+function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
 
-        function formatDisplayDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('pl-PL');
-        }
+function formatDisplayDate(dateString) {
+    const [year, month, day] = dateString.split('-');
+    const date = new Date(year, month - 1, day);
+    return date.toLocaleDateString('pl-PL');
+}
 
         function saveData() {
             localStorage.setItem('teacherDiary', JSON.stringify(appData));
