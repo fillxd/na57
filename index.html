@@ -749,9 +749,35 @@
             margin-bottom: 20px;
             text-align: right;
         }
+.menu {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background: #222;
+  padding: 10px 15px;
+  border-radius: 8px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column; /* kluczowe – ustawia linki jeden pod drugim */
+}
+.menu a {
+  color: white;
+  text-decoration: none;
+  margin-bottom: 8px; /* odstęp między linkami */
+  font-family: Arial, sans-serif;
+}
+.menu a:hover {
+  text-decoration: underline;
+}
     </style>
 </head>
 <body>
+<div class="menu">
+  <a href="https://fillxd.github.io/sz57">Syst</a>
+  <a href="https://fillxd.github.io/pl57">Plan</a>
+  <a href="https://fillxd.github.io/kl57">5b</a>
+  <a href="https://fillxd.github.io/na57">MG</a>
+</div>
     <div class="container">
         <header>
             <div class="logo">
@@ -2855,3 +2881,4 @@
     </script>
 </body>
 </html>
+
