@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -777,8 +778,8 @@
   <a href="https://fillxd.github.io/pl57">Plan</a>
   <a href="https://fillxd.github.io/kl57">5b</a>
   <a href="https://fillxd.github.io/na57">MG</a>
-  <a href="https://docs.google.com/spreadsheets/d/18OV9Sar_ENFseGPn8wppwrIeJXm6j4dsa890OTg6Ioo/edit?gid=1302175797#gid=1302175797">ARK</a>
 </div>
+
     <div class="container">
         <header>
             <div class="logo">
@@ -812,6 +813,13 @@
                     <div class="week-range" id="week-range">Ładowanie...</div>
                 </div>
                 
+                <div class="upcoming-events">
+                    <h3>Nadchodzące wydarzenia</h3>
+                    <div id="upcoming-events-list" class="event-list">
+                        <!-- Events will be loaded here -->
+                    </div>
+                </div>
+                
                 <div class="calendar-container">
                     <table class="calendar" id="weekly-calendar">
                         <thead>
@@ -828,12 +836,6 @@
                             <!-- Calendar will be generated here -->
                         </tbody>
                     </table>
-                </div>
-				                <div class="upcoming-events">
-                    <h3>Nadchodzące wydarzenia</h3>
-                    <div id="upcoming-events-list" class="event-list">
-                        <!-- Events will be loaded here -->
-                    </div>
                 </div>
             </section>
 
@@ -1762,7 +1764,6 @@
                     <label for="substitution-type">Typ zastępstwa:</label>
                     <select id="substitution-type" required>
                         <option value="substitute_for">Zastępuję za kogoś</option>
-						  <option value="x">Z</option>
                     </select>
                 </div>
                 <div id="substitute-for-input-container" style="display: none;">
@@ -2882,8 +2883,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
