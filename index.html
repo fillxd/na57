@@ -1119,12 +1119,30 @@
         };
 
         const GRADE_VALUES = {
-            '1': 1.0, '1+': 1.5, '2-': 1.75, '2': 2.0, '2+': 2.5,
-            '3-': 2.75, '3': 3.0, '3+': 3.5, '4-': 3.75, '4': 4.0,
-            '4+': 4.5, '5-': 4.75, '5': 5.0, '5+': 5.5, '6-': 5.75, '6': 6.0
-        };
+    // Oceny Z WAGĄ (liczą się do średniej)
+    '1': 1.0, '1+': 1.5, '2-': 1.75, '2': 2.0, '2+': 2.5,
+    '3-': 2.75, '3': 3.0, '3+': 3.5, '4-': 3.75, '4': 4.0,
+    '4+': 4.5, '5-': 4.75, '5': 5.0, '5+': 5.5, '6-': 5.75, '6': 6.0,
+    
+    // Oceny BEZ WAGI (nie liczą się do średniej) - z kropką
+    '.1': null, '.1+': null, '.2-': null, '.2': null, '.2+': null,
+    '.3-': null, '.3': null, '.3+': null, '.4-': null, '.4': null,
+    '.4+': null, '.5-': null, '.5': null, '.5+': null, '.6-': null, '.6': null,
+    
+    // Inne oceny bez wagi
+    'np': null, 'nb': null, 'zw': null, '+': null, '-': null
+};
 
-        const GRADE_OPTIONS = Object.keys(GRADE_VALUES);
+const GRADE_OPTIONS = [
+    // Oceny Z WAGĄ
+    '1', '1+', '2-', '2', '2+', '3-', '3', '3+', '4-', '4', '4+', '5-', '5', '5+', '6-', '6',
+    
+    // Oceny BEZ WAGI - z kropką
+    '.1', '.1+', '.2-', '.2', '.2+', '.3-', '.3', '.3+', '.4-', '.4', '.4+', '.5-', '.5', '.5+', '.6-', '.6',
+    
+    // Inne oceny bez wagi
+    'np', 'nb', 'zw', '+', '-'
+];	
 
         // Initialize data structures
         let appData = JSON.parse(localStorage.getItem('teacherDiary')) || {
@@ -1938,15 +1956,15 @@ function getCurrentWeek() {
         }
 
         function calculateAverage(grades) {
-            const validGrades = grades.filter(g => g && g.grade);
-            if (validGrades.length === 0) return '-';
-            
-            const sum = validGrades.reduce((total, grade) => {
-                return total + (GRADE_VALUES[grade.grade] || 0);
-            }, 0);
-            
-            return (sum / validGrades.length).toFixed(2);
-        }
+    const validGrades = grades.filter(g => g && g.grade && GRADE_VALUES[g.grade] !== null);
+    if (validGrades.length === 0) return '-';
+    
+    const sum = validGrades.reduce((total, grade) => {
+        return total + GRADE_VALUES[grade.grade];
+    }, 0);
+    
+    return (sum / validGrades.length).toFixed(2);
+}
 
         function showGradeDetails(student, semester, index) {
             const classVal = document.getElementById('grade-class').value;
@@ -2897,7 +2915,6 @@ function formatDisplayDate(dateString) {
     </script>
 </body>
 </html>
-
 
 
 
