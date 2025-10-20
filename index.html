@@ -1,11 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dziennik Nauczyciela</title>
-	  <link rel="icon" type="image/jpg" href="favicon.jpg">
+    <link rel="icon" type="image/jpg" href="favicon.jpg">
     <style>
         * {
             margin: 0;
@@ -750,38 +749,61 @@
             margin-bottom: 20px;
             text-align: right;
         }
-.menu {
-  position: fixed;
-  top: 10px;
-  left: 10px;
-  background: #222;
-  padding: 10px 15px;
-  border-radius: 8px;
-  z-index: 1000;
-  display: flex;
-  flex-direction: column; /* kluczowe – ustawia linki jeden pod drugim */
-}
-.menu a {
-  color: white;
-  text-decoration: none;
-  margin-bottom: 8px; /* odstęp między linkami */
-  font-family: Arial, sans-serif;
-}
-.menu a:hover {
-  text-decoration: underline;
-}
+
+        .menu {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: #222;
+            padding: 10px 15px;
+            border-radius: 8px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .menu a {
+            color: white;
+            text-decoration: none;
+            margin-bottom: 8px;
+            font-family: Arial, sans-serif;
+        }
+
+        .menu a:hover {
+            text-decoration: underline;
+        }
+
+        /* Loader */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            font-size: 24px;
+            color: #3498db;
+        }
     </style>
 </head>
 <body>
-<div class="menu">
-    <a href="https://fillxd.github.io/sz57">Syst</a>
-    <a href="https://fillxd.github.io/tm57">TM</a>
-    <a href="https://fillxd.github.io/pl57">Plan</a>
+    <div id="loader" class="loader">
+        <div>Ładowanie danych...</div>
+    </div>
+
+    <div class="menu">
+        <a href="https://fillxd.github.io/sz57">Syst</a>
+        <a href="https://fillxd.github.io/tm57">TM</a>
+        <a href="https://fillxd.github.io/pl57">Plan</a>
         <a href="https://fillxd.github.io/na57">MG</a>
-    <a href="https://fillxd.github.io/tk57">D5b</a>
-    <a href="https://fillxd.github.io/kl57">T5b</a>
- <a href="https://docs.google.com/spreadsheets/d/18OV9Sar_ENFseGPn8wppwrIeJXm6j4dsa890OTg6Ioo/edit?gid=1302175797#gid=1302175797">ARK</a>
-</div>
+        <a href="https://fillxd.github.io/tk57">D5b</a>
+        <a href="https://fillxd.github.io/kl57">T5b</a>
+        <a href="https://docs.google.com/spreadsheets/d/18OV9Sar_ENFseGPn8wppwrIeJXm6j4dsa890OTg6Ioo/edit?gid=1302175797#gid=1302175797">ARK</a>
+    </div>
 
     <div class="container">
         <header>
@@ -815,7 +837,6 @@
                 <div class="calendar-navigation">
                     <div class="week-range" id="week-range">Ładowanie...</div>
                 </div>
-            
                 
                 <div class="calendar-container">
                     <table class="calendar" id="weekly-calendar">
@@ -834,7 +855,8 @@
                         </tbody>
                     </table>
                 </div>
-				                <div class="upcoming-events">
+                
+                <div class="upcoming-events">
                     <h3>Nadchodzące wydarzenia</h3>
                     <div id="upcoming-events-list" class="event-list">
                         <!-- Events will be loaded here -->
@@ -1111,7 +1133,36 @@
         </div>
     </div>
 
-    <script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+     <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAXvVd4DvqMDMWvgmj5moWS81Gl_1xNS7g",
+            authDomain: "plansp57.firebaseapp.com",
+            databaseURL: "https://plansp57-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "plansp57",
+            storageBucket: "plansp57.firebasestorage.app",
+            messagingSenderId: "387651697748",
+            appId: "1:387651697748:web:c2789a6b19be39d72841c1",
+            measurementId: "G-FZEV0BR4V6"
+        };
+
+        // Initialize Firebase
+        let database, dbRef;
+        
+        try {
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+            dbRef = database.ref('teacherDiary');
+            console.log('✅ Firebase zainicjalizowany poprawnie');
+        } catch (error) {
+            console.error('❌ Błąd inicjalizacji Firebase:', error);
+            alert('Błąd inicjalizacji Firebase: ' + error.message);
+        }
+
         // Data storage and initialization
         const SCHOOL_YEAR = {
             start: '2025-09-01',
@@ -1119,33 +1170,33 @@
         };
 
         const GRADE_VALUES = {
-    // Oceny Z WAGĄ (liczą się do średniej)
-    '1': 1.0, '1+': 1.5, '2-': 1.75, '2': 2.0, '2+': 2.5,
-    '3-': 2.75, '3': 3.0, '3+': 3.5, '4-': 3.75, '4': 4.0,
-    '4+': 4.5, '5-': 4.75, '5': 5.0, '5+': 5.5, '6-': 5.75, '6': 6.0,
-    
-    // Oceny BEZ WAGI (nie liczą się do średniej) - z kropką
-    '.1': null, '.1+': null, '.2-': null, '.2': null, '.2+': null,
-    '.3-': null, '.3': null, '.3+': null, '.4-': null, '.4': null,
-    '.4+': null, '.5-': null, '.5': null, '.5+': null, '.6-': null, '.6': null,
-    
-    // Inne oceny bez wagi
-    'np': null, 'nb': null, 'zw': null, '+': null, '-': null
-};
+            // Oceny Z WAGĄ (liczą się do średniej)
+            '1': 1.0, '1+': 1.5, '2-': 1.75, '2': 2.0, '2+': 2.5,
+            '3-': 2.75, '3': 3.0, '3+': 3.5, '4-': 3.75, '4': 4.0,
+            '4+': 4.5, '5-': 4.75, '5': 5.0, '5+': 5.5, '6-': 5.75, '6': 6.0,
+            
+            // Oceny BEZ WAGI (nie liczą się do średniej) - z kropką
+            '.1': null, '.1+': null, '.2-': null, '.2': null, '.2+': null,
+            '.3-': null, '.3': null, '.3+': null, '.4-': null, '.4': null,
+            '.4+': null, '.5-': null, '.5': null, '.5+': null, '.6-': null, '.6': null,
+            
+            // Inne oceny bez wagi
+            'np': null, 'nb': null, 'zw': null, '+': null, '-': null
+        };
 
-const GRADE_OPTIONS = [
-    // Oceny Z WAGĄ
-    '1', '1+', '2-', '2', '2+', '3-', '3', '3+', '4-', '4', '4+', '5-', '5', '5+', '6-', '6',
-    
-    // Oceny BEZ WAGI - z kropką
-    '.1', '.1+', '.2-', '.2', '.2+', '.3-', '.3', '.3+', '.4-', '.4', '.4+', '.5-', '.5', '.5+', '.6-', '.6',
-    
-    // Inne oceny bez wagi
-    'np', 'nb', 'zw', '+', '-'
-];	
+        const GRADE_OPTIONS = [
+            // Oceny Z WAGĄ
+            '1', '1+', '2-', '2', '2+', '3-', '3', '3+', '4-', '4', '4+', '5-', '5', '5+', '6-', '6',
+            
+            // Oceny BEZ WAGI - z kropką
+            '.1', '.1+', '.2-', '.2', '.2+', '.3-', '.3', '.3+', '.4-', '.4', '.4+', '.5-', '.5', '.5+', '.6-', '.6',
+            
+            // Inne oceny bez wagi
+            'np', 'nb', 'zw', '+', '-'
+        ];
 
         // Initialize data structures
-        let appData = JSON.parse(localStorage.getItem('teacherDiary')) || {
+        let appData = {
             classes: [],
             students: {},
             schedule: {
@@ -1165,18 +1216,190 @@ const GRADE_OPTIONS = [
         };
 
         // Current state
-        let currentWeek = getCurrentWeek();
-        let currentEditingCell = null;
-        let currentSubstitutionData = null;
+// Current state
+let currentWeek = null; // <-- Zmienione: inicjalizujemy jako null
+let currentEditingCell = null;
+let currentSubstitutionData = null;
+
+        // Load data from Firebase with better error handling
+   // Load data from Firebase with better error handling
+async function loadDataFromFirebase() {
+    try {
+        console.log('⏳ Ładowanie danych z Firebase...');
+        const snapshot = await dbRef.once('value');
+        const data = snapshot.val();
+        
+        // Sprawdź czy trzeba migrować z localStorage
+        const migratedData = await migrateFromLocalStorage(data);
+        
+        if (data && data.classes) {
+            console.log('✅ Dane załadowane z Firebase:', data);
+            appData = data;
+        } else if (migratedData) {
+            console.log('✅ Używam zmigrowanych danych z localStorage');
+            appData = migratedData;
+        } else {
+            console.log('ℹ️ Brak danych, używam domyślnych i zapisuję');
+            await saveData();
+        }
+        
+        // Upewnij się że appData ma wszystkie potrzebne właściwości
+        if (!appData.schedule) appData.schedule = { standard: {}, actual: {} };
+        if (!appData.schedule.standard) appData.schedule.standard = {};
+        if (!appData.schedule.actual) appData.schedule.actual = {};
+        if (!appData.students) appData.students = {};
+        if (!appData.grades) appData.grades = {};
+        if (!appData.material) appData.material = {};
+        if (!appData.events) appData.events = [];
+        if (!appData.classes) appData.classes = [];
+        if (!appData.categories) appData.categories = [
+            { name: 'Odpowiedź ustna', color: '#3498db' },
+            { name: 'Kartkówka', color: '#9b59b6' },
+            { name: 'Sprawdzian', color: '#e74c3c' },
+            { name: 'Praca domowa', color: '#f39c12' },
+            { name: 'Aktywność', color: '#27ae60' }
+        ];
+        
+        console.log('✅ appData po inicjalizacji:', appData);
+        document.getElementById('loader').style.display = 'none';
+        
+    } catch (error) {
+        console.error('❌ Błąd ładowania danych z Firebase:', error);
+        console.error('Szczegóły błędu:', error.message);
+        
+        if (error.code === 'PERMISSION_DENIED') {
+            alert('BŁĄD: Brak uprawnień do odczytu danych!\n\nMusisz ustawić reguły bezpieczeństwa w Firebase Console.');
+        } else {
+            alert('Błąd ładowania danych: ' + error.message);
+        }
+        
+        console.log('⚠️ Używam domyślnych danych z powodu błędu');
+        document.getElementById('loader').style.display = 'none';
+    }
+}
+
+        // Save data to Firebase with better error handling
+        async function saveData() {
+            try {
+                console.log('💾 Zapisywanie danych do Firebase...');
+                console.log('Dane do zapisu:', appData);
+                
+                await dbRef.set(appData);
+                
+                console.log('✅ Dane zapisane pomyślnie w Firebase');
+                showNotification('Zapisano!');
+                
+            } catch (error) {
+                console.error('❌ Błąd zapisu danych do Firebase:', error);
+                console.error('Szczegóły błędu:', error.message);
+                
+                if (error.code === 'PERMISSION_DENIED') {
+                    alert('BŁĄD: Brak uprawnień do zapisu danych!');
+                } else {
+                    alert('Błąd zapisu danych: ' + error.message);
+                }
+            }
+        }
+// Funkcja jednorazowej migracji z localStorage do Firebase
+async function migrateFromLocalStorage(firebaseData) {
+    try {
+        // Sprawdź czy Firebase już ma dane
+        if (firebaseData && firebaseData.classes && firebaseData.classes.length > 0) {
+            console.log('ℹ️ Firebase już ma dane, pomijam migrację z localStorage');
+            return null;
+        }
+        
+        // Sprawdź czy są dane w localStorage
+        const localData = localStorage.getItem('teacherDiary');
+        
+        if (localData) {
+            console.log('🔄 Firebase jest pusty, ale localStorage ma dane - rozpoczynam migrację...');
+            const parsedData = JSON.parse(localData);
+            console.log('📦 Dane do migracji:', parsedData);
+            
+            // Zapisz do Firebase
+            await dbRef.set(parsedData);
+            
+            console.log('✅ Migracja zakończona pomyślnie!');
+            alert('✅ Pomyślnie przeniesiono dane z localStorage do Firebase!\n\nDane zostały zapisane w chmurze.');
+            
+            // OPCJONALNIE: Usuń dane z localStorage po migracji
+            // localStorage.removeItem('teacherDiary');
+            // console.log('🗑️ Dane usunięte z localStorage');
+            
+            return parsedData;
+        } else {
+            console.log('ℹ️ Brak danych w localStorage do migracji');
+            return null;
+        }
+    } catch (error) {
+        console.error('❌ Błąd migracji:', error);
+        alert('Błąd podczas migracji danych: ' + error.message);
+        return null;
+    }
+}
+        // Funkcja pomocnicza do pokazywania powiadomień
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #27ae60;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 5px;
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 2000);
+        }
+
+        // Dodaj style dla animacji powiadomienia
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
 
         // Initialize the application
-        function initApp() {
-            setupEventListeners();
-            loadInitialData();
-            showSection('home');
-            generateWeeklyCalendar();
-            loadUpcomingEvents();
-        }
+      // Initialize the application
+async function initApp() {
+    currentWeek = getCurrentWeek(); // <-- DODAJ TĘ LINIĘ NA POCZĄTKU
+    await loadDataFromFirebase();
+    setupEventListeners();
+    loadInitialData();
+    showSection('home');
+    generateWeeklyCalendar();
+    loadUpcomingEvents();
+}
 
         // Setup event listeners
         function setupEventListeners() {
@@ -1228,7 +1451,6 @@ const GRADE_OPTIONS = [
                 document.getElementById('material-modal').style.display = 'none';
             });
 
-            // Nowe przyciski dla wydarzeń
             document.getElementById('close-event-modal').addEventListener('click', () => {
                 document.getElementById('event-modal').style.display = 'none';
             });
@@ -1237,7 +1459,6 @@ const GRADE_OPTIONS = [
                 document.getElementById('event-details-modal').style.display = 'none';
             });
 
-            // Modal dla zastępstw
             document.getElementById('close-substitution-modal').addEventListener('click', () => {
                 document.getElementById('substitution-modal').style.display = 'none';
             });
@@ -1251,8 +1472,6 @@ const GRADE_OPTIONS = [
             document.getElementById('add-material').addEventListener('click', showMaterialForm);
             document.getElementById('add-grade-bulk').addEventListener('click', showBulkGradeForm);
             document.getElementById('add-grade-single').addEventListener('click', showSingleGradeForm);
-
-            // Dodane: przycisk dodawania wydarzeń
             document.getElementById('add-event-btn').addEventListener('click', showEventForm);
 
             // Dynamic select changes
@@ -1297,27 +1516,23 @@ const GRADE_OPTIONS = [
             }
         }
 
-function getCurrentWeek() {
-    const today = new Date();
-    const start = new Date(today);
-    
-    // Ustawiamy godzinę na 12:00:00 aby uniknąć problemów ze strefami czasowymi
-    start.setHours(12, 0, 0, 0);
-    
-    // Obliczamy poniedziałek: 
-    // - getDay() zwraca 0 dla niedzieli, 1 dla poniedziałku, ..., 6 dla soboty
-    // - Aby dostać poniedziałek: odejmujemy (dzień tygodnia - 1), 
-    //   ale jeśli to niedziela (0), to odejmujemy -6 żeby dostać poprzedni poniedziałek
-    const day = start.getDay();
-    const diff = start.getDate() - day + (day === 0 ? -6 : 1);
-    
-    start.setDate(diff);
-    
-    const end = new Date(start);
-    end.setDate(start.getDate() + 4);
-    
-    return { start, end };
-}
+        function getCurrentWeek() {
+            const today = new Date();
+            const start = new Date(today);
+            
+            start.setHours(12, 0, 0, 0);
+            
+            const day = start.getDay();
+            const diff = start.getDate() - day + (day === 0 ? -6 : 1);
+            
+            start.setDate(diff);
+            
+            const end = new Date(start);
+            end.setDate(start.getDate() + 4);
+            
+            return { start, end };
+        }
+
         function generateWeeklyCalendar() {
             const calendarBody = document.getElementById('calendar-body');
             const weekRangeElement = document.getElementById('week-range');
@@ -1372,7 +1587,6 @@ function getCurrentWeek() {
                             </div>
                         `;
                         
-                        // Dodaj wydarzenia do komórki
                         if (events.length > 0) {
                             events.forEach(event => {
                                 const eventElement = document.createElement('div');
@@ -1398,7 +1612,6 @@ function getCurrentWeek() {
                             showSubstitutionForm(dateKey, hour);
                         });
                         
-                        // Dodaj wydarzenia do pustej komórki
                         if (events.length > 0) {
                             events.forEach(event => {
                                 const eventElement = document.createElement('div');
@@ -1442,7 +1655,7 @@ function getCurrentWeek() {
             }
         }
 
-        // Schedule functions - SIMPLIFIED VERSION
+        // Schedule functions
         function loadSchedule() {
             const scheduleBody = document.getElementById('schedule-body');
             scheduleBody.innerHTML = '';
@@ -1692,21 +1905,6 @@ function getCurrentWeek() {
                     </div>
                 </div>
                 
-				                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="lesson-has-quiz" ${lesson.hasQuiz ? 'checked' : ''}>
-                            Zrealizowana podstawa programowa?
-                        </label>
-                    </div>
-                </div>
-				
-								                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="lesson-has-quiz" ${lesson.hasQuiz ? 'checked' : ''}>
-                            Lekcja zrealizowana nieplanowo (wyjście, apel)
-                        </label>
-                    </div>
-                </div>
                 <div class="form-actions">
                     <button class="btn btn-secondary" id="cancel-lesson-realization">Anuluj</button>
                     <button class="btn btn-primary" id="save-lesson-realization">Zapisz</button>
@@ -1792,7 +1990,6 @@ function getCurrentWeek() {
                     <label for="substitution-type">Typ zastępstwa:</label>
                     <select id="substitution-type" required>
                         <option value="substitute_for">Zastępuję za kogoś</option>
-				  <option value="">Z</option>
                     </select>
                 </div>
                 <div id="substitute-for-input-container" style="display: none;">
@@ -1956,15 +2153,15 @@ function getCurrentWeek() {
         }
 
         function calculateAverage(grades) {
-    const validGrades = grades.filter(g => g && g.grade && GRADE_VALUES[g.grade] !== null);
-    if (validGrades.length === 0) return '-';
-    
-    const sum = validGrades.reduce((total, grade) => {
-        return total + GRADE_VALUES[grade.grade];
-    }, 0);
-    
-    return (sum / validGrades.length).toFixed(2);
-}
+            const validGrades = grades.filter(g => g && g.grade && GRADE_VALUES[g.grade] !== null);
+            if (validGrades.length === 0) return '-';
+            
+            const sum = validGrades.reduce((total, grade) => {
+                return total + GRADE_VALUES[grade.grade];
+            }, 0);
+            
+            return (sum / validGrades.length).toFixed(2);
+        }
 
         function showGradeDetails(student, semester, index) {
             const classVal = document.getElementById('grade-class').value;
@@ -2166,6 +2363,10 @@ function getCurrentWeek() {
             const body = document.getElementById('grade-modal-body');
             
             title.textContent = isEdit ? 'Edytuj Ocenę' : 'Dodaj Ocenę Pojedynczą';
+            
+            const oldStudent = student;
+            const oldSemester = semester;
+            const oldIndex = index;
             
             body.innerHTML = `
                 <div class="form-group">
@@ -2461,7 +2662,6 @@ function getCurrentWeek() {
             });
         }
 
-        // Nowe funkcje do zarządzania wydarzeniami
         function showEventForm() {
             const modal = document.getElementById('event-modal');
             const title = document.getElementById('event-modal-title');
@@ -2513,7 +2713,6 @@ function getCurrentWeek() {
                 </div>
             `;
             
-            // Ustaw domyślną datę wpisania na dzisiejszą
             document.getElementById('event-entry-date').value = new Date().toISOString().split('T')[0];
             
             modal.style.display = 'flex';
@@ -2745,6 +2944,7 @@ function getCurrentWeek() {
             
             saveData();
             loadClassesForAdmin();
+            loadClasses();
             document.getElementById('new-class-name').value = '';
         }
 
@@ -2811,6 +3011,7 @@ function getCurrentWeek() {
             
             saveData();
             loadCategories();
+            loadClasses();
             document.getElementById('new-category-name').value = '';
         }
 
@@ -2831,6 +3032,7 @@ function getCurrentWeek() {
                 saveData();
                 loadClassesForAdmin();
                 loadStudentsForClass();
+                loadClasses();
             }
         }
 
@@ -2866,24 +3068,21 @@ function getCurrentWeek() {
                 
                 saveData();
                 loadCategories();
+                loadClasses();
             }
         }
 
-function formatDate(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
 
-function formatDisplayDate(dateString) {
-    const [year, month, day] = dateString.split('-');
-    const date = new Date(year, month - 1, day);
-    return date.toLocaleDateString('pl-PL');
-}
-
-        function saveData() {
-            localStorage.setItem('teacherDiary', JSON.stringify(appData));
+        function formatDisplayDate(dateString) {
+            const [year, month, day] = dateString.split('-');
+            const date = new Date(year, month - 1, day);
+            return date.toLocaleDateString('pl-PL');
         }
 
         function loadClasses() {
@@ -2915,6 +3114,3 @@ function formatDisplayDate(dateString) {
     </script>
 </body>
 </html>
-
-
-
