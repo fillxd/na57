@@ -19,7 +19,7 @@
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1850px;
             margin: 0 auto;
             background-color: white;
             min-height: 100vh;
@@ -665,7 +665,7 @@
         }
 
         .topic-list {
-            max-height: 200px;
+            max-height: 400px;
             overflow-y: auto;
             border: 1px solid #ddd;
             border-radius: 4px;
@@ -955,15 +955,15 @@
                                 <th rowspan="2">Uczeń</th>
                                 <th colspan="20" class="semester-header">Semestr I</th>
                                 <th colspan="20" class="semester-header">Semestr II</th>
-                                <th rowspan="2">Średnia Roczna</th>
+                                <th rowspan="2">Średnia</th>
                             </tr>
                             <tr>
                                 <!-- Semester I columns -->
                                 <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th>
-                                <th>10</th><th>11</th><th>12</th><th>13</th><th>14</th><th>15</th><th>16</th><th>17</th><th>18</th><th>19</th><th>Śr I</th>
+                                <th>10</th><th>11</th><th>12</th><th>13</th><th>14</th><th>15</th><th>16</th><th>17</th><th>PŚR</th><th>ŚR</th><th>S1</th>
                                 <!-- Semester II columns -->
                                 <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th>
-                                <th>10</th><th>11</th><th>12</th><th>13</th><th>14</th><th>15</th><th>16</th><th>17</th><th>18</th><th>19</th><th>Śr II</th>
+                                <th>10</th><th>11</th><th>12</th><th>13</th><th>14</th><th>15</th><th>16</th><th>17</th><th>PR</th><th>R</th><th>S2</th>
                             </tr>
                         </thead>
                         <tbody id="grade-table-body">
@@ -1472,7 +1472,7 @@ async function initApp() {
             document.getElementById('add-material').addEventListener('click', showMaterialForm);
             document.getElementById('add-grade-bulk').addEventListener('click', showBulkGradeForm);
             document.getElementById('add-grade-single').addEventListener('click', showSingleGradeForm);
-            document.getElementById('add-event-btn').addEventListener('click', showEventForm);
+            document.getElementById('add-event-btn').addEventListener('click', () => showEventForm(null));
 
             // Dynamic select changes
             document.getElementById('material-class').addEventListener('change', loadMaterial);
@@ -1906,9 +1906,10 @@ async function initApp() {
                 </div>
                 
                 <div class="form-actions">
-                    <button class="btn btn-secondary" id="cancel-lesson-realization">Anuluj</button>
-                    <button class="btn btn-primary" id="save-lesson-realization">Zapisz</button>
-                </div>
+    <button class="btn btn-success" id="view-grades-quick">📊 Zobacz oceny</button>
+    <button class="btn btn-secondary" id="cancel-lesson-realization">Anuluj</button>
+    <button class="btn btn-primary" id="save-lesson-realization">Zapisz</button>
+</div>
             `;
             
             modal.style.display = 'flex';
@@ -1917,6 +1918,9 @@ async function initApp() {
                 document.getElementById('substitute-for-container').style.display = 
                     this.value === 'substitute_for' ? 'block' : 'none';
             });
+			document.getElementById('view-grades-quick').addEventListener('click', () => {
+    showQuickGradesView(lesson.class, lesson.subject);
+});
             
             document.getElementById('cancel-lesson-realization').addEventListener('click', () => {
                 modal.style.display = 'none';
@@ -2555,6 +2559,197 @@ async function initApp() {
                 });
             });
         }
+		function showQuickGradesView(classVal, subject) {
+    const modal = document.getElementById('grade-modal');
+    const title = document.getElementById('grade-modal-title');
+    const body = document.getElementById('grade-modal-body');
+    
+    title.textContent = `Oceny: ${classVal}`;
+    
+    const students = appData.students[classVal] || [];
+    const classGrades = appData.grades[classVal] || {};
+    const currentSemester = new Date().getMonth() < 6 ? '1' : '2';
+    
+    body.innerHTML = `
+        <div style="margin-bottom: 15px;">
+            <button class="btn btn-success" id="quick-add-grade">➕ Dodaj oceny seryjnie</button>
+        </div>
+        
+        <div style="max-height: 400px; overflow-y: auto;">
+            <table class="grade-table" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Uczeń</th>
+                        <th>Semestr I</th>
+                        <th>Średnia I</th>
+                        <th>Semestr II</th>
+                        <th>Średnia II</th>
+                        <th>Akcje</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${students.map(student => {
+                        const sem1Grades = classGrades[student]?.['1'] || [];
+                        const sem2Grades = classGrades[student]?.['2'] || [];
+                        
+                        return `
+                            <tr>
+                                <td style="font-weight: 500;">${student}</td>
+                                <td style="font-size: 12px;">
+                                    ${sem1Grades.map(g => {
+                                        if (!g) return '';
+                                        const cat = appData.categories.find(c => c.name === g.category);
+                                        return `<span style="background: ${cat?.color || '#3498db'}; color: white; padding: 2px 5px; border-radius: 3px; margin: 2px; display: inline-block;">${g.grade}</span>`;
+                                    }).join('')}
+                                </td>
+                                <td style="font-weight: bold;">${calculateAverage(sem1Grades)}</td>
+                                <td style="font-size: 12px;">
+                                    ${sem2Grades.map(g => {
+                                        if (!g) return '';
+                                        const cat = appData.categories.find(c => c.name === g.category);
+                                        return `<span style="background: ${cat?.color || '#3498db'}; color: white; padding: 2px 5px; border-radius: 3px; margin: 2px; display: inline-block;">${g.grade}</span>`;
+                                    }).join('')}
+                                </td>
+                                <td style="font-weight: bold;">${calculateAverage(sem2Grades)}</td>
+                                <td>
+                                    <button class="btn btn-primary small-btn add-single-grade-quick" data-student="${student}">+</button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="form-actions" style="margin-top: 15px;">
+            <button class="btn btn-secondary" id="close-quick-grades">Zamknij</button>
+        </div>
+    `;
+    
+    modal.style.display = 'flex';
+    
+    // Zamknij modal
+    document.getElementById('close-quick-grades').addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+    
+    // Dodaj oceny seryjnie
+    document.getElementById('quick-add-grade').addEventListener('click', () => {
+        modal.style.display = 'none';
+        document.getElementById('grade-class').value = classVal;
+        showBulkGradeForm();
+    });
+    
+    // Dodaj pojedynczą ocenę
+    document.querySelectorAll('.add-single-grade-quick').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const student = this.getAttribute('data-student');
+            modal.style.display = 'none';
+            document.getElementById('grade-class').value = classVal;
+            showSingleGradeFormQuick(student, classVal);
+        });
+    });
+}
+function showSingleGradeFormQuick(student, classVal) {
+    const modal = document.getElementById('grade-modal');
+    const title = document.getElementById('grade-modal-title');
+    const body = document.getElementById('grade-modal-body');
+    
+    title.textContent = `Dodaj ocenę: ${student}`;
+    
+    body.innerHTML = `
+        <div class="form-group">
+            <label>Uczeń:</label>
+            <input type="text" value="${student}" disabled style="background: #f0f0f0;">
+        </div>
+        <div class="form-group">
+            <label for="quick-grade">Ocena:</label>
+            <select id="quick-grade" required>
+                <option value="">-- Wybierz ocenę --</option>
+                ${GRADE_OPTIONS.map(grade => `<option value="${grade}">${grade}</option>`).join('')}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="quick-category">Kategoria:</label>
+            <select id="quick-category" required>
+                <option value="">-- Wybierz kategorię --</option>
+                ${appData.categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="quick-topic">Temat/Opis:</label>
+            <input type="text" id="quick-topic">
+        </div>
+        <div class="form-group">
+            <label for="quick-semester">Semestr:</label>
+            <select id="quick-semester" required>
+                <option value="1">Semestr I</option>
+                <option value="2">Semestr II</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="quick-date">Data:</label>
+            <input type="date" id="quick-date" value="${new Date().toISOString().split('T')[0]}" required>
+        </div>
+        
+        <div class="form-actions">
+            <button class="btn btn-secondary" id="cancel-quick-grade">Anuluj</button>
+            <button class="btn btn-primary" id="save-quick-grade">Dodaj ocenę</button>
+        </div>
+    `;
+    
+    modal.style.display = 'flex';
+    
+    document.getElementById('cancel-quick-grade').addEventListener('click', () => {
+        showQuickGradesView(classVal);
+    });
+    
+    document.getElementById('save-quick-grade').addEventListener('click', () => {
+        const grade = document.getElementById('quick-grade').value;
+        const category = document.getElementById('quick-category').value;
+        const topic = document.getElementById('quick-topic').value;
+        const semester = document.getElementById('quick-semester').value;
+        const date = document.getElementById('quick-date').value;
+        
+        if (!grade || !category) {
+            alert('Proszę wypełnić wymagane pola');
+            return;
+        }
+        
+        if (!appData.grades[classVal]) {
+            appData.grades[classVal] = {};
+        }
+        
+        if (!appData.grades[classVal][student]) {
+            appData.grades[classVal][student] = { '1': [], '2': [] };
+        }
+        
+        const semesterGrades = appData.grades[classVal][student][semester];
+        let emptyIndex = -1;
+        
+        for (let i = 0; i < 19; i++) {
+            if (!semesterGrades[i]) {
+                emptyIndex = i;
+                break;
+            }
+        }
+        
+        if (emptyIndex !== -1) {
+            semesterGrades[emptyIndex] = {
+                grade: grade,
+                category: category,
+                topic: topic,
+                date: date
+            };
+            
+            saveData();
+            showQuickGradesView(classVal);
+            showNotification('Ocena dodana!');
+        } else {
+            alert('Brak miejsca na nowe oceny w tym semestrze');
+        }
+    });
+}
 
         function showMaterialForm() {
             const classVal = document.getElementById('material-class').value;
@@ -2683,101 +2878,124 @@ async function initApp() {
             });
         }
 
-        function showEventForm() {
-            const modal = document.getElementById('event-modal');
-            const title = document.getElementById('event-modal-title');
-            const body = document.getElementById('event-modal-body');
-            
-            title.textContent = 'Dodaj Wydarzenie';
-            
-            body.innerHTML = `
-                <div class="form-group">
-                    <label for="event-class">Wybór klasy:</label>
-                    <select id="event-class" required>
-                        <option value="">-- Wybierz klasę --</option>
-                        ${appData.classes.map(c => `<option value="${c}">${c}</option>`).join('')}
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="event-subject">Przedmiot:</label>
-                    <input type="text" id="event-subject" placeholder="Wpisz przedmiot" required>
-                </div>
-                <div class="form-group">
-                    <label for="event-category">Wybór kategorii:</label>
-                    <select id="event-category" required>
-                        <option value="">-- Wybierz kategorię --</option>
-                        ${appData.categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="event-entry-date">Data wpisania:</label>
-                    <input type="date" id="event-entry-date" required>
-                </div>
-                <div class="form-group">
-                    <label for="event-date">Data wydarzenia:</label>
-                    <input type="date" id="event-date" required>
-                </div>
-                <div class="form-group">
-                    <label for="event-description">Opis:</label>
-                    <textarea id="event-description" rows="3" placeholder="Opis wydarzenia"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="event-lesson">Lekcja (opcjonalnie):</label>
-                    <select id="event-lesson">
-                        <option value="">-- Nie przypisuj do lekcji --</option>
-                        ${Array.from({length: 10}, (_, i) => i + 1).map(h => `<option value="${h}">Lekcja ${h}</option>`).join('')}
-                    </select>
-                </div>
-                <div class="form-actions">
-                    <button class="btn btn-secondary" id="cancel-event">Anuluj</button>
-                    <button class="btn btn-primary" id="save-event">Dodaj</button>
-                </div>
-            `;
-            
-            document.getElementById('event-entry-date').value = new Date().toISOString().split('T')[0];
-            
-            modal.style.display = 'flex';
-            
-            document.getElementById('cancel-event').addEventListener('click', () => {
-                modal.style.display = 'none';
-            });
-            
-            document.getElementById('save-event').addEventListener('click', saveEvent);
-        }
+      function showEventForm(eventId = null) {
+    const modal = document.getElementById('event-modal');
+    const title = document.getElementById('event-modal-title');
+    const body = document.getElementById('event-modal-body');
+    
+    const isEdit = eventId ? true : false;
+    const event = isEdit ? appData.events.find(e => e.id === eventId) : null;
+    
+    title.textContent = isEdit ? 'Edytuj Wydarzenie' : 'Dodaj Wydarzenie';
+    
+    body.innerHTML = `
+        <div class="form-group">
+            <label for="event-class">Wybór klasy:</label>
+            <select id="event-class" required>
+                <option value="">-- Wybierz klasę --</option>
+                ${appData.classes.map(c => 
+                    `<option value="${c}" ${isEdit && event && event.class === c ? 'selected' : ''}>${c}</option>`
+                ).join('')}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="event-subject">Przedmiot:</label>
+            <input type="text" id="event-subject" placeholder="Wpisz przedmiot" value="${isEdit && event ? event.subject : ''}" required>
+        </div>
+        <div class="form-group">
+            <label for="event-category">Wybór kategorii:</label>
+            <select id="event-category" required>
+                <option value="">-- Wybierz kategorię --</option>
+                ${appData.categories.map(c => 
+                    `<option value="${c.name}" ${isEdit && event && event.category === c.name ? 'selected' : ''}>${c.name}</option>`
+                ).join('')}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="event-entry-date">Data wpisania:</label>
+            <input type="date" id="event-entry-date" value="${isEdit && event ? event.entryDate : new Date().toISOString().split('T')[0]}" required>
+        </div>
+        <div class="form-group">
+            <label for="event-date">Data wydarzenia:</label>
+            <input type="date" id="event-date" value="${isEdit && event ? event.date : ''}" required>
+        </div>
+        <div class="form-group">
+            <label for="event-description">Opis:</label>
+            <textarea id="event-description" rows="3" placeholder="Opis wydarzenia">${isEdit && event && event.description ? event.description : ''}</textarea>
+        </div>
+        <div class="form-group">
+            <label for="event-lesson">Lekcja (opcjonalnie):</label>
+            <select id="event-lesson">
+                <option value="">-- Nie przypisuj do lekcji --</option>
+                ${Array.from({length: 10}, (_, i) => i + 1).map(h => 
+                    `<option value="${h}" ${isEdit && event && event.lesson == h ? 'selected' : ''}>Lekcja ${h}</option>`
+                ).join('')}
+            </select>
+        </div>
+        <div class="form-actions">
+            <button class="btn btn-secondary" id="cancel-event">Anuluj</button>
+            <button class="btn btn-primary" id="save-event">${isEdit ? 'Zapisz zmiany' : 'Dodaj'}</button>
+        </div>
+    `;
+    
+    modal.style.display = 'flex';
+    
+    document.getElementById('cancel-event').addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+    
+    document.getElementById('save-event').addEventListener('click', () => {
+        saveEvent(eventId);
+    });
+}
 
-        function saveEvent() {
-            const classVal = document.getElementById('event-class').value;
-            const subject = document.getElementById('event-subject').value;
-            const category = document.getElementById('event-category').value;
-            const entryDate = document.getElementById('event-entry-date').value;
-            const eventDate = document.getElementById('event-date').value;
-            const description = document.getElementById('event-description').value;
-            const lesson = document.getElementById('event-lesson').value;
-            
-            if (!classVal || !subject || !category || !eventDate) {
-                alert('Proszę wypełnić wymagane pola');
-                return;
-            }
-            
-            const newEvent = {
-                id: Date.now().toString(),
-                class: classVal,
-                subject: subject,
-                category: category,
-                entryDate: entryDate,
-                date: eventDate,
-                description: description,
-                lesson: lesson || null,
-                title: `${subject} - ${category}`
+      function saveEvent(eventId = null) {
+    const classVal = document.getElementById('event-class').value;
+    const subject = document.getElementById('event-subject').value;
+    const category = document.getElementById('event-category').value;
+    const entryDate = document.getElementById('event-entry-date').value;
+    const eventDate = document.getElementById('event-date').value;
+    const description = document.getElementById('event-description').value;
+    const lesson = document.getElementById('event-lesson').value;
+    
+    if (!classVal || !subject || !category || !eventDate) {
+        alert('Proszę wypełnić wymagane pola');
+        return;
+    }
+    
+    const eventData = {
+        class: classVal,
+        subject: subject,
+        category: category,
+        entryDate: entryDate,
+        date: eventDate,
+        description: description,
+        lesson: lesson || null,
+        title: `${subject} - ${category}`
+    };
+    
+    if (eventId) {
+        // Edycja istniejącego wydarzenia
+        const index = appData.events.findIndex(e => e.id === eventId);
+        if (index !== -1) {
+            appData.events[index] = {
+                ...eventData,
+                id: eventId  // Zachowaj oryginalne ID
             };
-            
-            appData.events.push(newEvent);
-            saveData();
-            generateWeeklyCalendar();
-            loadUpcomingEvents();
-            document.getElementById('event-modal').style.display = 'none';
-            alert('Wydarzenie zostało dodane');
         }
+    } else {
+        // Dodawanie nowego wydarzenia
+        appData.events.push({
+            ...eventData,
+            id: Date.now().toString()
+        });
+    }
+    
+    saveData();
+    generateWeeklyCalendar();
+    loadUpcomingEvents();
+    document.getElementById('event-modal').style.display = 'none';
+}
 
         function showEventDetails(eventId) {
             const event = appData.events.find(e => e.id === eventId);
@@ -2804,9 +3022,10 @@ async function initApp() {
                     <p><strong>Opis:</strong> ${event.description || 'Brak opisu'}</p>
                 </div>
                 <div class="form-actions">
-                    <button class="btn btn-danger" id="delete-event">Usuń</button>
-                    <button class="btn btn-secondary" id="close-event-details">Zamknij</button>
-                </div>
+    <button class="btn btn-primary" id="edit-event">Edytuj</button>
+    <button class="btn btn-danger" id="delete-event">Usuń</button>
+    <button class="btn btn-secondary" id="close-event-details">Zamknij</button>
+</div>
             `;
             
             modal.style.display = 'flex';
@@ -2814,7 +3033,10 @@ async function initApp() {
             document.getElementById('close-event-details').addEventListener('click', () => {
                 modal.style.display = 'none';
             });
-            
+            document.getElementById('edit-event').addEventListener('click', () => {
+    modal.style.display = 'none';
+    showEventForm(eventId);
+});
             document.getElementById('delete-event').addEventListener('click', () => {
                 if (confirm('Czy na pewno chcesz usunąć to wydarzenie?')) {
                     appData.events = appData.events.filter(e => e.id !== eventId);
@@ -3135,4 +3357,3 @@ async function initApp() {
     </script>
 </body>
 </html>
-
