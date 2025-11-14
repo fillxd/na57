@@ -1194,6 +1194,20 @@
             // Inne oceny bez wagi
             'np', 'nb', 'zw', '+', '-'
         ];
+		function ensureGradesArray(data) {
+    if (!data) return [];
+    if (Array.isArray(data)) return data;
+    
+    // Konwertuj obiekt z Firebase na tablicę
+    const arr = new Array(20).fill(null);
+    Object.keys(data).forEach(key => {
+        const index = parseInt(key);
+        if (!isNaN(index) && index >= 0 && index < 20) {
+            arr[index] = data[key];
+        }
+    });
+    return arr;
+}
 
         // Initialize data structures
         let appData = {
@@ -2107,8 +2121,8 @@ async function initApp() {
                 nameCell.textContent = student;
                 row.appendChild(nameCell);
                 
-                const sem1Grades = classGrades[student]?.['1'] || [];
-                const filteredSem1Grades = category === 'all' ? sem1Grades : sem1Grades.filter(g => g && g.category === category);
+                const sem1Grades = ensureGradesArray(classGrades[student]?.['1']);
+const filteredSem1Grades = category === 'all' ? sem1Grades : sem1Grades.filter(g => g && g.category === category);
                 
                 for (let i = 0; i < 19; i++) {
                     const gradeCell = document.createElement('td');
@@ -2137,8 +2151,8 @@ async function initApp() {
                 avg1Cell.textContent = calculateAverage(filteredSem1Grades);
                 row.appendChild(avg1Cell);
                 
-                const sem2Grades = classGrades[student]?.['2'] || [];
-                const filteredSem2Grades = category === 'all' ? sem2Grades : sem2Grades.filter(g => g && g.category === category);
+                const sem2Grades = ensureGradesArray(classGrades[student]?.['2']);
+const filteredSem2Grades = category === 'all' ? sem2Grades : sem2Grades.filter(g => g && g.category === category);
                 
                 for (let i = 0; i < 19; i++) {
                     const gradeCell = document.createElement('td');
@@ -2589,8 +2603,8 @@ async function initApp() {
                 </thead>
                 <tbody>
                     ${students.map(student => {
-                        const sem1Grades = classGrades[student]?.['1'] || [];
-                        const sem2Grades = classGrades[student]?.['2'] || [];
+                        const sem1Grades = ensureGradesArray(classGrades[student]?.['1']);
+const sem2Grades = ensureGradesArray(classGrades[student]?.['2']);
                         
                         return `
                             <tr>
